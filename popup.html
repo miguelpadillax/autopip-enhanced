@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Autopip Enhanced</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="popup-shell">
+    
+    <header class="header">
+      <div class="logo" aria-hidden="true">
+        <img class="logo-icon" src="icons/icon.svg" alt="" />
+      </div>
+      <div class="header-text">
+        <h1 data-i18n="popup.title">Autopip Enhanced</h1>
+        <p data-i18n="popup.subtitle">Smart PiP for YouTube</p>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-label" data-i18n="popup.section.settings">Settings</div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="label" data-i18n="popup.setting.autoPip.label">Auto Picture-in-Picture</div>
+          <div class="desc" data-i18n="popup.setting.autoPip.desc">Enable automatic PiP and interaction gate</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="toggleAutoPip" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="label" data-i18n="popup.setting.rememberSpeed.label">Remember playback speed</div>
+          <div class="desc" data-i18n="popup.setting.rememberSpeed.desc">Restore your last speed on new videos</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="toggleRememberSpeed" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="label" data-i18n="popup.setting.allowPausedPip.label">Enable PiP when paused</div>
+          <div class="desc" data-i18n="popup.setting.allowPausedPip.desc">Allow PiP trigger even if video is paused</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="togglePipOnPause" />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="label" data-i18n="popup.setting.language.label">App language</div>
+          <div class="desc" data-i18n="popup.setting.language.desc">Choose the display language</div>
+        </div>
+        <select id="languageSelect" class="language-select" aria-label="Language">
+          <option value="en" data-i18n="popup.language.en">English</option>
+          <option value="es" data-i18n="popup.language.es">Spanish</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label" data-i18n="popup.section.playbackSpeed">Playback Speed</div>
+      <div class="speed-grid" id="speedGrid"></div>
+    </section>
+
+    <section class="section">
+      <button id="resetStorageBtn" class="reset-btn" data-i18n="popup.reset.button">Reset app data</button>
+    </section>
+
+    <footer class="footer" data-i18n="popup.footer">Autopip Enhanced v1.0</footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
