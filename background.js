@@ -3,7 +3,20 @@
 const pendingDestinationByYouTubeTab = new Map();
 const interactedYouTubeTabs = new Set();
 const gateInProgressByYouTubeTab = new Set();
+const gateStartedAtByYouTubeTab = new Map();
 const bypassNextDestinationByYouTubeTab = new Map();
+const GATE_STALE_TIMEOUT_MS = 10000;
+
+function clearStaleGateIfNeeded(youtubeTabId) {
+  if (!gateInProgressByYouTubeTab.has(youtubeTabId)) return;
+
+  const startedAt = gateStartedAtByYouTubeTab.get(youtubeTabId) || 0;
+  if (Date.now() - startedAt < GATE_STALE_TIMEOUT_MS) return;
+
+  gateInProgressByYouTubeTab.delete(youtubeTabId);
+  gateStartedAtByYouTubeTab.delete(youtubeTabId);
+  pendingDestinationByYouTubeTab.delete(youtubeTabId);
+}
 
 function consumeBypassIfMatches(youtubeTabId, destinationTabId) {
   if (!youtubeTabId || !destinationTabId) return false;
@@ -41,6 +54,8 @@ chrome.tabs.onActivated.addListener(async ({ tabId, windowId }) => {
     if (youtubeTab.id === tabId) continue;
     if (!isYouTubeTab(youtubeTab.url)) continue;
 
+    clearStaleGateIfNeeded(youtubeTab.id);
+
     if (consumeBypassIfMatches(youtubeTab.id, destinationTab.id)) {
       continue;
     }
@@ -53,10 +68,10 @@ chrome.tabs.onActivated.addListener(async ({ tabId, windowId }) => {
     const qualifiesForPiP = isPlaying || (pipOnPause && hasVideo);
 
     if (qualifiesForPiP && !hasInteracted && !isInPiP) {
-      if (gateInProgressByYouTubeTab.has(youtubeTab.id)) break;
+      if (gateInProgressByYouTubeTab.has(youtubeTab.id)) continue;
 
       const pendingDest = pendingDestinationByYouTubeTab.get(youtubeTab.id);
-      if (pendingDest === destinationTab.id) break;
+      if (pendingDest === destinationTab.id) continue;
 
       try {
         await startInteractionGate(youtubeTab, destinationTab);
@@ -101,6 +116,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     const destTabId = msg.destTabId || pendingDestTabId;
     pendingDestinationByYouTubeTab.delete(youtubeTabId);
     gateInProgressByYouTubeTab.delete(youtubeTabId);
+    gateStartedAtByYouTubeTab.delete(youtubeTabId);
 
     if (!destTabId) {
       sendResponse({ ok: false });
@@ -125,6 +141,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       const destTabId = msg.destTabId || pendingDestTabId;
       pendingDestinationByYouTubeTab.delete(youtubeTabId);
       gateInProgressByYouTubeTab.delete(youtubeTabId);
+      gateStartedAtByYouTubeTab.delete(youtubeTabId);
 
       if (destTabId) {
         bypassNextDestinationByYouTubeTab.set(youtubeTabId, {
@@ -197,6 +214,7 @@ async function startInteractionGate(youtubeTab, destinationTab) {
     return true;
   }
   gateInProgressByYouTubeTab.add(youtubeTab.id);
+  gateStartedAtByYouTubeTab.set(youtubeTab.id, Date.now());
 
   pendingDestinationByYouTubeTab.set(youtubeTab.id, destinationTab.id);
 
@@ -211,6 +229,7 @@ async function startInteractionGate(youtubeTab, destinationTab) {
   } catch (_) {
     pendingDestinationByYouTubeTab.delete(youtubeTab.id);
     gateInProgressByYouTubeTab.delete(youtubeTab.id);
+    gateStartedAtByYouTubeTab.delete(youtubeTab.id);
     return false;
   }
 }
@@ -262,5 +281,6 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   interactedYouTubeTabs.delete(tabId);
   pendingDestinationByYouTubeTab.delete(tabId);
   gateInProgressByYouTubeTab.delete(tabId);
+  gateStartedAtByYouTubeTab.delete(tabId);
   bypassNextDestinationByYouTubeTab.delete(tabId);
 });
