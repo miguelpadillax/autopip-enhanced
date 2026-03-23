@@ -42,12 +42,20 @@
 - User can confirm (enable PiP and continue) or cancel (continue without PiP).
 - Cancel path temporarily bypasses repeated prompting for the same destination tab.
 
-## 🔧 Installation (Developer Mode)
+## 🔧 Installation
 
-1. Open `chrome://extensions`.
-2. Enable Developer mode.
-3. Click Load unpacked.
-4. Select this project folder.
+You can install the extension using one of these options:
+
+#### A) Chrome Web Store (Recommended)
+
+- Install from [Chrome Web Store](https://chromewebstore.google.com/detail/autopip-enhanced/ldkdoddjjgknhokdbpbpipekodnpjfok).
+
+#### B) Developer Mode
+
+-  Open `chrome://extensions`.
+- Enable Developer mode.
+- Click Load unpacked.
+- Select this project folder.
 
 ## 🔐 Permissions
 

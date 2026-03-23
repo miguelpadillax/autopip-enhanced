@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "AutoPiP Enhanced",
+  "name": "__MSG_extName__",
   "version": "1.0.0",
-  "description": "Automatically enables Picture-in-Picture when you leave a YouTube tab, with interaction gate and playback speed controls.",
+  "description": "__MSG_extDescription__",
+  "default_locale": "en",
   "permissions": [
     "tabs",
     "storage",
@@ -11,9 +12,7 @@
   ],
   "host_permissions": [
     "https://www.youtube.com/*",
-    "https://youtube.com/*",
-    "http://*/*",
-    "https://*/*"
+    "https://youtube.com/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -42,7 +41,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["overlay.html", "icons/*", "locales/*.json"],
+      "resources": ["overlay.html", "icons/*", "_locales/*/*.json"],
       "matches": ["https://www.youtube.com/*", "https://youtube.com/*"]
     }
   ]

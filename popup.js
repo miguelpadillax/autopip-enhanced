@@ -4,7 +4,21 @@ const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5];
 let i18n = {};
 
 function t(key) {
-  return i18n[key] || key;
+  const normalizedKey = String(key).replace(/[^a-zA-Z0-9_@]/g, '_');
+  return i18n[key] || i18n[normalizedKey] || key;
+}
+
+function flattenChromeMessages(raw) {
+  if (!raw || typeof raw !== 'object') return {};
+  const flat = {};
+
+  Object.entries(raw).forEach(([key, value]) => {
+    if (value && typeof value.message === 'string') {
+      flat[key] = value.message;
+    }
+  });
+
+  return flat;
 }
 
 function storageGet(keys) {
@@ -39,8 +53,9 @@ async function loadLocale(lang) {
   const safeLang = lang === 'es' ? 'es' : 'en';
 
   try {
-    const res = await fetch(chrome.runtime.getURL(`locales/${safeLang}.json`));
-    i18n = await res.json();
+    const res = await fetch(chrome.runtime.getURL(`_locales/${safeLang}/messages.json`));
+    const raw = await res.json();
+    i18n = flattenChromeMessages(raw);
   } catch (_) {
     i18n = {};
   }

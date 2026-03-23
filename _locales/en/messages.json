@@ -1,0 +1,70 @@
+{
+  "extName": {
+    "message": "AutoPiP Enhanced",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "Automatically enables Picture-in-Picture when you leave a YouTube tab.",
+    "description": "Extension description"
+  },
+  "popup_title": {
+    "message": "AutoPiP Enhanced"
+  },
+  "popup_subtitle": {
+    "message": "Smart PiP for YouTube"
+  },
+  "popup_section_settings": {
+    "message": "Settings"
+  },
+  "popup_setting_autoPip_label": {
+    "message": "Auto Picture-in-Picture"
+  },
+  "popup_setting_autoPip_desc": {
+    "message": "Enable automatic PiP and interaction gate"
+  },
+  "popup_setting_rememberSpeed_label": {
+    "message": "Remember playback speed"
+  },
+  "popup_setting_rememberSpeed_desc": {
+    "message": "Restore your last speed on new videos"
+  },
+  "popup_setting_allowPausedPip_label": {
+    "message": "Enable PiP when paused"
+  },
+  "popup_setting_allowPausedPip_desc": {
+    "message": "Allow PiP trigger even if video is paused"
+  },
+  "popup_setting_language_label": {
+    "message": "App language"
+  },
+  "popup_setting_language_desc": {
+    "message": "Choose the display language"
+  },
+  "popup_section_playbackSpeed": {
+    "message": "Playback Speed"
+  },
+  "popup_reset_button": {
+    "message": "Reset app data"
+  },
+  "popup_footer": {
+    "message": "AutoPiP Enhanced v1.0"
+  },
+  "popup_language_en": {
+    "message": "English"
+  },
+  "popup_language_es": {
+    "message": "Spanish"
+  },
+  "gate_title": {
+    "message": "Confirm to continue"
+  },
+  "gate_subtitle": {
+    "message": "Leaving this tab requires one interaction first."
+  },
+  "gate_continue": {
+    "message": "Enable PiP and switch tab"
+  },
+  "gate_cancel": {
+    "message": "Continue without PiP"
+  }
+}

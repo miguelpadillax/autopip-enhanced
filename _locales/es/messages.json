@@ -1,0 +1,70 @@
+{
+  "extName": {
+    "message": "AutoPiP Enhanced",
+    "description": "Nombre de la extensión"
+  },
+  "extDescription": {
+    "message": "Activa automáticamente Picture-in-Picture al salir de una pestaña de YouTube.",
+    "description": "Descripción de la extensión"
+  },
+  "popup_title": {
+    "message": "AutoPiP Enhanced"
+  },
+  "popup_subtitle": {
+    "message": "PiP inteligente para YouTube"
+  },
+  "popup_section_settings": {
+    "message": "Configuración"
+  },
+  "popup_setting_autoPip_label": {
+    "message": "PiP automático"
+  },
+  "popup_setting_autoPip_desc": {
+    "message": "Activa PiP y compuerta de interacción"
+  },
+  "popup_setting_rememberSpeed_label": {
+    "message": "Recordar velocidad"
+  },
+  "popup_setting_rememberSpeed_desc": {
+    "message": "Restaura tu velocidad al abrir videos"
+  },
+  "popup_setting_allowPausedPip_label": {
+    "message": "Permitir PiP en pausa"
+  },
+  "popup_setting_allowPausedPip_desc": {
+    "message": "Activa PiP aunque el video esté en pausa"
+  },
+  "popup_setting_language_label": {
+    "message": "Idioma"
+  },
+  "popup_setting_language_desc": {
+    "message": "Elige el idioma"
+  },
+  "popup_section_playbackSpeed": {
+    "message": "Velocidad de reproducción"
+  },
+  "popup_reset_button": {
+    "message": "Reiniciar datos de la app"
+  },
+  "popup_footer": {
+    "message": "AutoPiP Enhanced v1.0"
+  },
+  "popup_language_en": {
+    "message": "Inglés"
+  },
+  "popup_language_es": {
+    "message": "Español"
+  },
+  "gate_title": {
+    "message": "Confirma para continuar"
+  },
+  "gate_subtitle": {
+    "message": "Para salir de esta pestaña, se requiere una interacción."
+  },
+  "gate_continue": {
+    "message": "Activar PiP y cambiar pestaña"
+  },
+  "gate_cancel": {
+    "message": "Continuar sin PiP"
+  }
+}
