@@ -188,6 +188,28 @@
     const applyRememberedSpeed = () => restoreSpeed(video);
     video.addEventListener('loadedmetadata', applyRememberedSpeed);
     video.addEventListener('play', applyRememberedSpeed);
+
+    video.addEventListener('enterpictureinpicture', (event) => {
+      isInPiP = true;
+      pipWindow = event?.pictureInPictureWindow || null;
+      registerMediaSessionActions(video);
+    });
+
+    video.addEventListener('leavepictureinpicture', () => {
+      isInPiP = false;
+      pipWindow = null;
+      suppressPromptUntilVisible = false;
+    });
+  }
+
+  function syncPiPState() {
+    const activePiPVideo = document.pictureInPictureElement;
+    if (activePiPVideo) {
+      isInPiP = true;
+      return;
+    }
+    isInPiP = false;
+    pipWindow = null;
   }
 
   async function enterPiP(options = {}) {
@@ -441,6 +463,8 @@
   }
 
   async function handleVisibilityChange() {
+    syncPiPState();
+
     const video = getVideo();
     if (!video) return;
     if (video.paused && !allowPausedPiP) return;
@@ -514,6 +538,8 @@
     lastKnownVideoSrc = initialVideo.currentSrc || '';
     restoreSpeed(initialVideo);
   }
+
+  syncPiPState();
 
   hasUserInteracted = false;
   safeSendMessage({ type: 'USER_INTERACTION_RESET' });
