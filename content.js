@@ -15,6 +15,10 @@
   let allowPausedPiP = false;
   let i18n = {};
   let gateStylesInjected = false;
+  let visibilityChangeInProgress = false;
+  let videoCache = null;
+  let videoCacheTime = 0;
+  const VIDEO_CACHE_TTL = 500;
 
   function hasExtensionContext() {
     return Boolean(chrome?.runtime?.id);
@@ -134,6 +138,7 @@
   function resetInteractionState() {
     if (!hasUserInteracted) return;
     hasUserInteracted = false;
+    videoCache = null;
     safeSendMessage({ type: 'USER_INTERACTION_RESET' });
   }
 
@@ -150,11 +155,28 @@
   });
 
   function getVideo() {
-    return (
+    const now = Date.now();
+    if (videoCache && (now - videoCacheTime) < VIDEO_CACHE_TTL) {
+      if (document.contains(videoCache)) {
+        return videoCache;
+      }
+    }
+
+    const video = (
       document.querySelector('video.html5-main-video') ||
       document.querySelector('#movie_player video') ||
+      Array.from(document.querySelectorAll('video')).find((v) => {
+        return v.duration > 10 && !v.closest('.ytp-ad-player-overlay');
+      }) ||
       document.querySelector('video')
     );
+
+    if (video) {
+      videoCache = video;
+      videoCacheTime = now;
+    }
+
+    return video;
   }
 
   async function ensureVideoMetadataReady(video) {
@@ -165,19 +187,26 @@
       const timeout = setTimeout(() => {
         cleanup();
         reject(new Error('metadata-timeout'));
-      }, 2500);
+      }, 5000);
 
       function onLoaded() {
         cleanup();
         resolve();
       }
 
+      function onError() {
+        cleanup();
+        reject(new Error('metadata-error'));
+      }
+
       function cleanup() {
         clearTimeout(timeout);
         video.removeEventListener('loadedmetadata', onLoaded);
+        video.removeEventListener('error', onError);
       }
 
       video.addEventListener('loadedmetadata', onLoaded, { once: true });
+      video.addEventListener('error', onError, { once: true });
     });
   }
 
@@ -208,6 +237,11 @@
       isInPiP = true;
       return;
     }
+
+    if (pipWindow && pipWindow.width === 0) {
+      pipWindow = null;
+    }
+
     isInPiP = false;
     pipWindow = null;
   }
@@ -225,10 +259,21 @@
 
       registerMediaSessionActions(video);
 
-      pipWindow.addEventListener('leavepictureinpicture', () => {
+      const leavePiPHandler = () => {
         isInPiP = false;
         pipWindow = null;
-      });
+        suppressPromptUntilVisible = false;
+      };
+
+      if (pipWindow) {
+        pipWindow.addEventListener('leavepictureinpicture', leavePiPHandler, { once: true });
+      }
+
+      setTimeout(() => {
+        if (video.paused && !allowPaused && isInPiP) {
+          exitPiP();
+        }
+      }, 100);
 
       return true;
     } catch (_) {
@@ -463,35 +508,42 @@
   }
 
   async function handleVisibilityChange() {
-    syncPiPState();
+    if (visibilityChangeInProgress) return;
+    visibilityChangeInProgress = true;
 
-    const video = getVideo();
-    if (!video) return;
-    if (video.paused && !allowPausedPiP) return;
+    try {
+      syncPiPState();
 
-    if (document.hidden) {
-      wasHiddenSinceLastVisible = true;
+      const video = getVideo();
+      if (!video) return;
+      if (video.paused && !allowPausedPiP) return;
 
-      if (isInPiP || suppressPromptUntilVisible) {
-        return;
-      }
+      if (document.hidden) {
+        wasHiddenSinceLastVisible = true;
 
-      if (hasUserInteracted) {
-        await enterPiP({ allowPaused: allowPausedPiP });
+        if (isInPiP || suppressPromptUntilVisible) {
+          return;
+        }
+
+        if (hasUserInteracted) {
+          await enterPiP({ allowPaused: allowPausedPiP });
+        } else {
+          safeSendMessage({ type: 'NEEDS_INTERACTION_PROMPT' });
+        }
       } else {
-        safeSendMessage({ type: 'NEEDS_INTERACTION_PROMPT' });
-      }
-    } else {
-      suppressPromptUntilVisible = false;
+        suppressPromptUntilVisible = false;
 
-      if (wasHiddenSinceLastVisible) {
-        resetInteractionState();
-        wasHiddenSinceLastVisible = false;
-      }
+        if (wasHiddenSinceLastVisible) {
+          resetInteractionState();
+          wasHiddenSinceLastVisible = false;
+        }
 
-      if (isInPiP) {
-        await exitPiP();
+        if (isInPiP) {
+          await exitPiP();
+        }
       }
+    } finally {
+      visibilityChangeInProgress = false;
     }
   }
 
@@ -508,6 +560,8 @@
   document.addEventListener('visibilitychange', handleVisibilityChange);
 
   const observer = new MutationObserver(() => {
+    videoCache = null;
+
     const video = getVideo();
     if (video) {
       installVideoHooks(video);
@@ -529,7 +583,22 @@
     }
   });
 
-  observer.observe(document.body, { childList: true, subtree: true });
+  function startObserver() {
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+    } else {
+      const checkBody = setInterval(() => {
+        if (document.body) {
+          clearInterval(checkBody);
+          observer.observe(document.body, { childList: true, subtree: true });
+        }
+      }, 100);
+
+      setTimeout(() => clearInterval(checkBody), 10000);
+    }
+  }
+
+  startObserver();
 
   const initialVideo = getVideo();
   if (initialVideo) {
