@@ -60,6 +60,12 @@ chrome.tabs.onActivated.addListener(async ({ tabId, windowId }) => {
       continue;
     }
 
+    try {
+      await chrome.tabs.get(youtubeTab.id);
+    } catch (_) {
+      continue;
+    }
+
     const status = await safeGetYouTubeStatus(youtubeTab.id);
     const hasInteracted = status?.hasInteracted ?? interactedYouTubeTabs.has(youtubeTab.id);
     const isInPiP = status?.isInPiP ?? false;
@@ -175,6 +181,9 @@ async function safeGetYouTubeStatus(tabId) {
 
 async function probeIsPlaying(tabId) {
   try {
+    const tab = await chrome.tabs.get(tabId);
+    if (tab.status !== 'complete') return false;
+
     const [result] = await chrome.scripting.executeScript({
       target: { tabId },
       func: () => {
@@ -193,6 +202,9 @@ async function probeIsPlaying(tabId) {
 
 async function probeHasVideo(tabId) {
   try {
+    const tab = await chrome.tabs.get(tabId);
+    if (tab.status !== 'complete') return false;
+
     const [result] = await chrome.scripting.executeScript({
       target: { tabId },
       func: () => Boolean(
@@ -262,7 +274,11 @@ async function activateTabWithRetry(tabId, attempts = 5) {
     } catch (err) {
       lastError = err;
       const message = String(err?.message || '');
-      const transient = message.includes('Tabs cannot be edited right now');
+      const transient =
+        message.includes('Tabs cannot be edited right now') ||
+        message.includes('No tab with id') ||
+        message.includes('Tab not found');
+
       if (!transient || i === attempts - 1) {
         throw err;
       }

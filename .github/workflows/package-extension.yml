@@ -1,0 +1,66 @@
+name: Build Extension ZIP Artifact
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - manifest.json
+
+permissions:
+  contents: write
+
+jobs:
+  package-extension:
+    runs-on: ubuntu-latest
+
+    env:
+      EXTENSION_NAME: autopip-enhanced
+      EXCLUDE_PATTERNS: |
+        README.md
+        LICENSE
+        .git/
+        .github/
+        .DS_Store
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Read extension version from manifest
+        id: version
+        run: |
+          VERSION=$(node -p "require('./manifest.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build extension ZIP
+        id: package
+        run: |
+          ZIP_FILE="${EXTENSION_NAME}-v${{ steps.version.outputs.version }}.zip"
+          ROOT_DIR="${EXTENSION_NAME}-v${{ steps.version.outputs.version }}"
+
+          STAGING_DIR=$(mktemp -d)
+          INNER_DIR="$STAGING_DIR/$ROOT_DIR"
+          mkdir -p "$INNER_DIR"
+
+          RSYNC_EXCLUDE_ARGS=()
+          while IFS= read -r pattern; do
+            [[ -z "$pattern" ]] && continue
+            RSYNC_EXCLUDE_ARGS+=("--exclude" "$pattern")
+          done <<< "$EXCLUDE_PATTERNS"
+
+          rsync -a --delete "${RSYNC_EXCLUDE_ARGS[@]}" ./ "$INNER_DIR/"
+
+          (
+            cd "$STAGING_DIR"
+            zip -r "$GITHUB_WORKSPACE/$ZIP_FILE" "$ROOT_DIR"
+          )
+
+          echo "zip_file=$ZIP_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Upload ZIP artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ steps.package.outputs.zip_file }}
+          path: ${{ steps.package.outputs.zip_file }}
+          if-no-files-found: error
