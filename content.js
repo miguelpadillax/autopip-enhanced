@@ -526,7 +526,10 @@
         }
 
         if (hasUserInteracted) {
-          await enterPiP({ allowPaused: allowPausedPiP });
+          const enteredPiP = await enterPiP({ allowPaused: allowPausedPiP });
+          if (!enteredPiP) {
+            safeSendMessage({ type: 'NEEDS_INTERACTION_PROMPT' });
+          }
         } else {
           safeSendMessage({ type: 'NEEDS_INTERACTION_PROMPT' });
         }
